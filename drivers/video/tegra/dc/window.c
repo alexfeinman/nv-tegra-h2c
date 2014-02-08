@@ -145,13 +145,17 @@ int tegra_dc_sync_windows(struct tegra_dc_win *windows[], int n)
 	ret = wait_event_interruptible(windows[0]->dc->wq,
 		tegra_dc_windows_are_clean(windows, n));
 #else
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:Before wait_event_interruptible_timeout\n",
 		windows[0]->dc->ndev->name);
+#endif
 	ret = wait_event_interruptible_timeout(windows[0]->dc->wq,
 		tegra_dc_windows_are_clean(windows, n),
 		HZ);
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:After wait_event_interruptible_timeout\n",
 		windows[0]->dc->ndev->name);
+#endif
 #endif
 	return ret;
 }
@@ -393,9 +397,11 @@ int tegra_dc_update_windows(struct tegra_dc_win *windows[], int n)
 			dfixed_trunc(win->w), dfixed_trunc(win->h),
 			win->out_x, win->out_y, win->out_w, win->out_h,
 			win->fmt, yuvp, Bpp, filter_h, filter_v);
+#ifdef CONFIG_TEGRA_DC_DEBUG
 		trace_printk("%s:win%u in:%ux%u out:%ux%u fmt=%d\n",
 			dc->ndev->name, win->idx, dfixed_trunc(win->w),
 			dfixed_trunc(win->h), win->out_w, win->out_h, win->fmt);
+#endif
 	}
 
 	if (update_blend) {
@@ -434,7 +440,9 @@ int tegra_dc_update_windows(struct tegra_dc_win *windows[], int n)
 		update_mask |= NC_HOST_TRIG;
 
 	tegra_dc_writel(dc, update_mask, DC_CMD_STATE_CONTROL);
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:update_mask=%#lx\n", dc->ndev->name, update_mask);
+#endif
 
 	tegra_dc_release_dc_out(dc);
 	mutex_unlock(&dc->lock);

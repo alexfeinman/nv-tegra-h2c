@@ -1032,7 +1032,9 @@ static void tegra_dc_underflow_handler(struct tegra_dc *dc)
 	dc->underflow_mask = 0;
 	val = tegra_dc_readl(dc, DC_CMD_INT_MASK);
 	tegra_dc_writel(dc, val | ALL_UF_INT, DC_CMD_INT_MASK);
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	print_underflow_info(dc);
+#endif
 }
 
 #ifndef CONFIG_TEGRA_FPGA_PLATFORM
@@ -1369,7 +1371,9 @@ static bool _tegra_dc_controller_enable(struct tegra_dc *dc)
 
 	tegra_dc_ext_enable(dc->ext);
 
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:enable\n", dc->ndev->name);
+#endif
 
 	tegra_dc_writel(dc, GENERAL_UPDATE, DC_CMD_STATE_CONTROL);
 	tegra_dc_writel(dc, GENERAL_ACT_REQ, DC_CMD_STATE_CONTROL);
@@ -1438,7 +1442,9 @@ static bool _tegra_dc_controller_reset_enable(struct tegra_dc *dc)
 		_tegra_dc_controller_disable(dc);
 	}
 
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:reset enable\n", dc->ndev->name);
+#endif
 	return ret;
 }
 #endif
@@ -1503,13 +1509,17 @@ static void _tegra_dc_controller_disable(struct tegra_dc *dc)
 
 		/* flush any pending syncpt waits */
 		while (dc->syncpt[i].min < dc->syncpt[i].max) {
+#ifdef CONFIG_TEGRA_DC_DEBUG
 			trace_printk("%s:syncpt flush id=%d\n", dc->ndev->name,
 				dc->syncpt[i].id);
+#endif
 			dc->syncpt[i].min++;
 			nvhost_syncpt_cpu_incr_ext(dc->ndev, dc->syncpt[i].id);
 		}
 	}
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:disabled\n", dc->ndev->name);
+#endif
 }
 
 void tegra_dc_stats_enable(struct tegra_dc *dc, bool enable)
@@ -1655,7 +1665,9 @@ static void tegra_dc_reset_worker(struct work_struct *work)
 unlock:
 	mutex_unlock(&dc->lock);
 	mutex_unlock(&shared_lock);
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:reset complete\n", dc->ndev->name);
+#endif
 }
 #endif
 
@@ -1944,7 +1956,9 @@ static int tegra_dc_suspend(struct nvhost_device *ndev, pm_message_t state)
 {
 	struct tegra_dc *dc = nvhost_get_drvdata(ndev);
 
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:suspend\n", dc->ndev->name);
+#endif
 	dev_info(&ndev->dev, "suspend\n");
 
 	tegra_dc_ext_disable(dc->ext);
@@ -1978,7 +1992,9 @@ static int tegra_dc_resume(struct nvhost_device *ndev)
 {
 	struct tegra_dc *dc = nvhost_get_drvdata(ndev);
 
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:resume\n", dc->ndev->name);
+#endif
 	dev_info(&ndev->dev, "resume\n");
 
 	mutex_lock(&dc->lock);

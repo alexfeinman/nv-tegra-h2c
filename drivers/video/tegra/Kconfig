@@ -30,6 +30,13 @@ config TEGRA_DC
 	help
 	  Tegra display controller support.
 
+config TEGRA_DC_DEBUG
+        bool "Output additional trace information via trace_printk"
+        default n
+        help
+          Print mode change, bandwith and register read/write events
+          to trace_pipe.
+
 config FB_TEGRA
 	tristate "Tegra Framebuffer driver"
 	depends on TEGRA_DC && FB = y

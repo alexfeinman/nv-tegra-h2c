@@ -214,8 +214,10 @@ static unsigned long tegra_dc_get_bandwidth(
 /* to save power, call when display memory clients would be idle */
 void tegra_dc_clear_bandwidth(struct tegra_dc *dc)
 {
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:%s rate=%d\n", dc->ndev->name, __func__,
 		dc->emc_clk_rate);
+#endif
 	if (tegra_is_clk_enabled(dc->emc_clk))
 		clk_disable(dc->emc_clk);
 	dc->emc_clk_rate = 0;
@@ -252,8 +254,10 @@ void tegra_dc_program_bandwidth(struct tegra_dc *dc, bool use_new)
 			w->new_bandwidth != 0)
 			tegra_dc_set_latency_allowance(dc, w);
 		w->bandwidth = w->new_bandwidth;
+#ifdef CONFIG_TEGRA_DC_DEBUG
 		trace_printk("%s:win%u bandwidth=%d\n", dc->ndev->name, w->idx,
 			w->bandwidth);
+#endif
 	}
 }
 
@@ -277,7 +281,9 @@ int tegra_dc_set_dynamic_emc(struct tegra_dc_win *windows[], int n)
 	if (tegra_dc_has_multiple_dc())
 		new_rate = ULONG_MAX;
 
+#ifdef CONFIG_TEGRA_DC_DEBUG
 	trace_printk("%s:new_emc_clk_rate=%ld\n", dc->ndev->name, new_rate);
+#endif
 	dc->new_emc_clk_rate = new_rate;
 
 	return 0;
