@@ -841,6 +841,12 @@ static void spi_tegra_start_transfer(struct spi_device *spi,
 		tspi->cur_direction |= DATA_DIR_TX;
 	}
 	command2 |= SLINK_SS_EN_CS(spi->chip_select);
+	
+    if ( spi->mode & SPI_LSB_FIRST )
+		command2 |= SLINK_LSBFE;
+	else
+		command2 &= ~SLINK_LSBFE;
+
 	spi_tegra_writel(tspi, command2, SLINK_COMMAND2);
 	tspi->command2_reg = command2;
 
