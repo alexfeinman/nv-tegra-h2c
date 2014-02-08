@@ -488,7 +488,30 @@ static void tegra_camera_capture_setup_csi_a(struct tegra_camera_dev *pcdev,
 		(0x1 << 8) | /* Enable continuous syncpt */
 		TEGRA_VI_SYNCPT_CSI_A);
 
+	if ( pdata->lanes > 2 ) {
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_PHY_CIL_COMMAND, 0x00020002);
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_INPUT_STREAM_A_CONTROL, 0x00ff0003);
+		//TC_VI_REG_WT(pcdev, 0x0844, 0x220164f1); //CSI_PIXEL_STREAM_B_CONTROL0_0(VI_0x211)
+		//TC_VI_REG_WT(pcdev, 0x0818, 0x22011ef0); //CSI_PIXEL_STREAM_A_CONTROL0_0(VI_0x206):A-YUV pad1s enabled, virtual channel ID 00
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_PHY_CILA_CONTROL0, 0x23);
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_CILA_PAD_CONFIG0, (1 << 17) );
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_CILA_PAD_CONFIG1, 0);
+#if 0
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_CILA_MIPI_CAL_CONFIG, (0xa << 26) |
+															(0x2 << 24) |
+															(0x1 << 21));
+#endif
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_INPUT_STREAM_B_CONTROL, 0xff0000);
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_PHY_CILB_CONTROL0, 0x23);
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_CILB_PAD_CONFIG0, 0);
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_CILB_PAD_CONFIG1, 0);
+
+		TC_VI_REG_WT(pcdev, TEGRA_CSI_PHY_CIL_COMMAND, 0x00010001);
+
+
+	} else {
 	TC_VI_REG_WT(pcdev, TEGRA_CSI_PHY_CIL_COMMAND, 0x00020001);
+	}
 
 	TC_VI_REG_WT(pcdev, TEGRA_CSI_PIXEL_STREAM_PPA_COMMAND, 0x0000f002);
 }
@@ -1670,6 +1693,18 @@ static int tegra_camera_set_fmt(struct soc_camera_device *icd,
 	return ret;
 }
 
+static int tegra_camera_enum_fsizes(struct soc_camera_device *icd, struct v4l2_frmsizeenum * fsize) {
+	struct v4l2_subdev *sd = soc_camera_to_subdev(icd);
+	int ret;
+
+	//printk("%s (%d)\n", __func__, fsize->index);
+	ret = v4l2_subdev_call(sd, video, enum_framesizes, fsize);
+	if (IS_ERR_VALUE(ret))
+		return ret;
+
+	return 0;
+}
+
 static int tegra_camera_try_fmt(struct soc_camera_device *icd,
 				struct v4l2_format *f)
 {
@@ -1770,6 +1805,7 @@ static struct soc_camera_host_ops tegra_soc_camera_host_ops = {
 	.reqbufs	= tegra_camera_reqbufs,
 	.poll		= tegra_camera_poll,
 	.querycap	= tegra_camera_querycap,
+	.enum_fsizes = tegra_camera_enum_fsizes,
 };
 
 static int __devinit tegra_camera_probe(struct nvhost_device *ndev,
