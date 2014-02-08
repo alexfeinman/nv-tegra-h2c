@@ -326,6 +326,7 @@ enum {
 	V4L2_IDENT_UPD64083 = 64083,
 
 	/* Don't just add new IDs at the end: KEEP THIS LIST ORDERED BY ID! */
+	V4L2_IDENT_TC358743 = 358743,
 };
 
 #endif

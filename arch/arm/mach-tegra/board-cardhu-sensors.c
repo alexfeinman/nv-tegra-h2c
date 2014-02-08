@@ -42,7 +42,7 @@
 #include <mach/fb.h>
 #include <mach/gpio.h>
 #include <media/ov5650.h>
-#include <media/ov5640.h>
+#include <media/tc358743.h>
 #include <media/ov14810.h>
 #include <media/ov2710.h>
 #include <media/tps61050.h>
@@ -90,47 +90,47 @@ static struct pca954x_platform_data cardhu_pca954x_data = {
 	.num_modes      = ARRAY_SIZE(cardhu_pca954x_modes),
 };
 
-#if defined(CONFIG_SOC_CAMERA_OV5640) \
-	|| defined(CONFIG_SOC_CAMERA_OV5640_MODULE)
-static int cardhu_ov5640_power_on(void);
-static int cardhu_ov5640_power_off(void);
+#if defined(CONFIG_SOC_CAMERA_TC358743) \
+	|| defined(CONFIG_SOC_CAMERA_TC358743_MODULE)
+static int cardhu_tc358743_power_on(void);
+static int cardhu_tc358743_power_off(void);
 
-static int cardhu_ov5640_power(struct device *dev, int enable)
+static int cardhu_tc358743_power(struct device *dev, int enable)
 {
 	if (enable)
-		return cardhu_ov5640_power_on();
+		return cardhu_tc358743_power_on();
 	else
-		cardhu_ov5640_power_off();
+		cardhu_tc358743_power_off();
 
 	return 0;
 }
 
-static struct i2c_board_info cardhu_ov5640_camera_i2c_device = {
-	I2C_BOARD_INFO("ov5640", 0x3C),
+static struct i2c_board_info cardhu_tc358743_camera_i2c_device = {
+	I2C_BOARD_INFO("tc358743", 0x0f),
 };
 
-static struct tegra_camera_platform_data cardhu_ov5640_camera_platform_data = {
+static struct tegra_camera_platform_data cardhu_tc358743_camera_platform_data = {
 	.flip_v			= 0,
 	.flip_h			= 0,
-	.port			= TEGRA_CAMERA_PORT_CSI_B,
-	.lanes			= 2,
-	.continuous_clk		= 0,
+	.port			= TEGRA_CAMERA_PORT_CSI_A,
+	.lanes			= 4,
+	.continuous_clk		= 1,
 };
 
-static struct soc_camera_link ov5640_iclink = {
+static struct soc_camera_link tc358743_iclink = {
 	.bus_id		= -1, /* This must match the .id of tegra_vi01_device */
-	.board_info	= &cardhu_ov5640_camera_i2c_device,
-	.module_name	= "ov5640",
+	.board_info	= &cardhu_tc358743_camera_i2c_device,
+	.module_name	= "tc358743",
 	.i2c_adapter_id	= PCA954x_I2C_BUS2,
-	.power		= cardhu_ov5640_power,
-	.priv		= &cardhu_ov5640_camera_platform_data,
+	.power		= cardhu_tc358743_power,
+	.priv		= &cardhu_tc358743_camera_platform_data,
 };
 
-static struct platform_device cardhu_ov5640_soc_camera_device = {
+static struct platform_device cardhu_tc358743_soc_camera_device = {
 	.name	= "soc-camera-pdrv",
 	.id	= 1,
 	.dev	= {
-		.platform_data = &ov5640_iclink,
+		.platform_data = &tc358743_iclink,
 	},
 };
 #endif
@@ -580,7 +580,7 @@ struct ov2710_platform_data cardhu_ov2710_data = {
 	.power_off = cardhu_ov2710_power_off,
 };
 
-static int cardhu_ov5640_power_on(void)
+static int cardhu_tc358743_power_on(void)
 {
 	/* CSI-B and front sensor are muxed on cardhu */
 	gpio_direction_output(CAMERA_CSI_MUX_SEL_GPIO, 1);
@@ -633,7 +633,7 @@ reg_alloc_fail:
 	return -ENODEV;
 }
 
-static int cardhu_ov5640_power_off(void)
+static int cardhu_tc358743_power_off(void)
 {
 	/* CSI-B and front sensor are muxed on cardhu */
 	gpio_direction_output(CAMERA_CSI_MUX_SEL_GPIO, 1);
@@ -655,9 +655,9 @@ static int cardhu_ov5640_power_off(void)
 	return 0;
 }
 
-struct ov5640_platform_data cardhu_ov5640_data = {
-	.power_on = cardhu_ov5640_power_on,
-	.power_off = cardhu_ov5640_power_off,
+struct tc358743_platform_data cardhu_tc358743_data = {
+	.power_on = cardhu_tc358743_power_on,
+	.power_off = cardhu_tc358743_power_off,
 };
 
 static const struct i2c_board_info cardhu_i2c3_board_info[] = {
@@ -855,10 +855,10 @@ static struct i2c_board_info cardhu_i2c8_board_info[] = {
 		I2C_BOARD_INFO("ov2710", 0x36),
 		.platform_data = &cardhu_ov2710_data,
 	},
-#if defined(CONFIG_VIDEO_OV5640) || defined(CONFIG_VIDEO_OV5640_MODULE)
+#if defined(CONFIG_VIDEO_TC358743) || defined(CONFIG_VIDEO_TC358743_MODULE)
 	{
-		I2C_BOARD_INFO("ov5640", 0x3C),
-		.platform_data = &cardhu_ov5640_data,
+		I2C_BOARD_INFO("tc358743", 0x3C),
+		.platform_data = &cardhu_tc358743_data,
 	},
 #endif
 };
@@ -1257,9 +1257,8 @@ int __init cardhu_sensors_init(void)
 	|| defined(CONFIG_SOC_CAMERA_OV5650_MODULE)
 	platform_device_register(&cardhu_ov5650_soc_camera_device);
 #endif
-#if defined(CONFIG_SOC_CAMERA_OV5640) \
-	|| defined(CONFIG_SOC_CAMERA_OV5640_MODULE)
-	platform_device_register(&cardhu_ov5640_soc_camera_device);
+#if defined(CONFIG_SOC_CAMERA_TC358743)
+	platform_device_register(&cardhu_tc358743_soc_camera_device);
 #endif
 
 	return 0;

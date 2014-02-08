@@ -897,6 +897,12 @@ config SOC_CAMERA_OV9740
 	help
 	  This is a ov9740 camera driver
 
+config SOC_CAMERA_TC358743
+	tristate "TC358743 HDMI<->CSI bridge support"
+	depends on SOC_CAMERA && I2C
+	---help---
+	  This is a V4L2 SoC camera driver for the Toshiba TC358743 HDMI<->CSI bridge
+
 config MX1_VIDEO
 	bool
 
