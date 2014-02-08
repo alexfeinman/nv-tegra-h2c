@@ -53,6 +53,7 @@ static void *vb2_dma_nvmap_alloc(void *alloc_ctx, unsigned long size)
 		goto exit;
 	}
 
+	size += 16 * 2 * 1920; // Make buffer slightly larger to allow 1080 output when 1072 is requested
 	buf->nvmap_ref = nvmap_alloc(conf->nvmap_client, size, 32,
 				     NVMAP_HANDLE_UNCACHEABLE, 0);
 	if (IS_ERR(buf->nvmap_ref)) {
@@ -61,6 +62,7 @@ static void *vb2_dma_nvmap_alloc(void *alloc_ctx, unsigned long size)
 		goto exit_free;
 	}
 
+    nvmap_mark_global(conf->nvmap_client, buf->nvmap_ref);
 	buf->paddr = nvmap_pin(conf->nvmap_client, buf->nvmap_ref);
 	if (IS_ERR_VALUE(buf->paddr)) {
 		dev_err(conf->dev, "nvmap_pin failed\n");
